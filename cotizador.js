@@ -1,35 +1,8 @@
-/*
-var nombreCompleto = prompt("Por favor ingrese el nombre completo:", "Nombres y apellidos");
-var diaNacimiento = prompt("Ingrese el día de nacimiento", "Ejemplo: Si nació el 22 de enero, solamente ingresar 22");
-var mesNacimiento = prompt("Ingrese el mes de nacimiento", "Ejemplo: Si nació en enero, solamente ingresar 1 porque es el mes 1");
-var anioNacimiento = prompt("Ingrese el año de nacimiento", "Ejemplo: Si nació el 22 de enero de 1987, solamente ingresar 1987");
-
-var conyuge = prompt("¿Tiene cónyuge?", "SI/NO");
-var hijos = prompt("¿Tiene hijos?", "SI/NO");
-var cantidadHijos = prompt("Ingrese la cantidad de hijos menores de 21 años:", "Por favor ingrese únicamente números");
-
-const precioBase = 250;
-
-
-comision = precioBase * 0.30;
-*/
-// El siguiente es un comentario.
-// Por favor no elimine los caracteres // que se encuentran al inicio.
-
-// En la siguiente variable usted debe calcular los cargos correspondientes.
-// Puede crear la cantidad de variables necesarias para calcular cada uno
-// de los recargos que sean necesarios
-/*
-recargos = 0;
-
-
-totalPagar = precioBase + comision + recargos;
-document.write(totalPagar);
-*/
-
 const precioBase = 250;
 const comision = precioBase * 0.30;
 var recargos = 0;
+var recargosConyugue = 0;
+var recargosHijos = 0;
 
 function validarSiTieneHijos() {
     var siTieneHijosInput = document.getElementById('siTieneHijos');
@@ -88,6 +61,11 @@ function cotizar() {
         return null;
     }
 
+    if (siTieneConyugueInput && siTieneConyugueInput.checked && !siTieneConyugueInput.value) {
+        mostrarError('Ingrese la fecha de nacimiento de su conyugue');
+        return null;
+    }
+
     if (siTieneHijosInput && siTieneHijosInput.checked && !cantidadHijosInput.value) {
         mostrarError('Ingrese la cantidad de hijos menores a 21 años');
         return null;
@@ -109,28 +87,61 @@ function cotizar() {
     //CALCULAR RECARGOS POR EDAD DEL CONYUGUE
     if (siTieneConyugueInput && siTieneConyugueInput.checked) {
         var edadConyugue = getEdad(fechaNacimientoConyugueInput);
-
+        calcularRecargoPorEdadConyugue(edadConyugue);
     }
 
-    console.log(recargos);
+    if (siTieneHijosInput && siTieneHijosInput.checked) {
+        if (!cantidadHijosInput.value) {
+            cantidadHijosInput.value = '0';
+        }
+        recargosPorCantidadDeHijos(parseInt(cantidadHijosInput.value));
+    }
 
-    var totalPagar = precioBase + comision + recargos;
+    var totalRecargos = recargos + recargosConyugue + recargosHijos;
+    var totalPagar = precioBase + comision + totalRecargos;
+
+    document.getElementById('resumen-nombre-cliente').innerHTML = nombreCompletoInput.value;
+    document.getElementById('resumen-recargos-cliente').innerHTML = recargos.toFixed(2);
+    document.getElementById('recargo-seguro-conyugue').innerHTML = recargosConyugue.toFixed(2);
+    document.getElementById('recargo-seguro-hijos').innerHTML = recargosHijos.toFixed(2);
+    document.getElementById('total-pagar').innerHTML = totalPagar.toFixed(2);
+
+    document.getElementById('main-result-container').style.display = 'block';
+    document.getElementById('main-form-container').style.display = 'none';
 }
 
 function calcularRecargosPorEdad(edad) {
     recargos = 0;
 
     if (edad >= 21 && edad <= 25) {
-        recargos += (precioBase * 1) / 100;
+        recargos = (precioBase * 1) / 100;
     } else if (edad >= 25 && edad <= 30) {
-        recargos += (precioBase * 2) / 100;
+        recargos = (precioBase * 2) / 100;
     } else if (edad >= 30 && edad <= 40) {
-        recargos += (precioBase * 5) / 100;
+        recargos = (precioBase * 5) / 100;
     } else if (edad >= 40 && edad <= 50) {
-        recargos += (precioBase * 8) / 100;
+        recargos = (precioBase * 8) / 100;
     } else if (edad >= 50 && edad <= 65) {
-        recargos += (precioBase * 12) / 100;
+        recargos = (precioBase * 12) / 100;
     }
+}
+
+function calcularRecargoPorEdadConyugue(edad) {
+    recargosConyugue = 0;
+
+    if (edad < 30) {
+        recargosConyugue = (precioBase * 1) / 100;
+    } else if (edad >= 30 && edad < 40) {
+        recargosConyugue = (precioBase * 2) / 100;
+    } else if (edad >= 40 && edad < 50) {
+        recargosConyugue = (precioBase * 3) / 100;
+    } else if (edad >= 50 && edad < 70) {
+        recargosConyugue = (precioBase * 5) / 100;
+    }
+}
+
+function recargosPorCantidadDeHijos(cantidadHijos) {
+    recargosHijos = (precioBase * cantidadHijos) / 100;
 }
 
 function getEdad(fechaNacimientoInput) {
@@ -139,4 +150,26 @@ function getEdad(fechaNacimientoInput) {
     var edadMilisegundos = fechaActual.getTime() - fechaNacimiento.getTime();
 
     return parseInt(edadMilisegundos / 1000 / 60 / 60 / 24 / 365);
+}
+
+function nueva(){
+    document.getElementById('nombreCompleto').value = '';
+    document.getElementById('fechaNacimiento').value = '';
+    document.getElementById('noTieneConyugue').checked = true;
+    document.getElementById('fechaNacimientoConyugue').value = '';
+    document.getElementById('fechaNacimientoConyugue').disabled = true;
+    document.getElementById('noTieneHijos').checked = true;
+    document.getElementById('cantidadHijos').value = '';
+    document.getElementById('cantidadHijos').disabled = true;
+
+    recargos = 0;
+    recargosConyugue = 0;
+    recargosHijos = 0;
+    
+    document.getElementById('resumen-nombre-cliente').innerHTML = '';
+    document.getElementById('recargo-seguro-conyugue').innerHTML = recargosConyugue.toFixed(2);
+    document.getElementById('recargo-seguro-hijos').innerHTML = recargosHijos.toFixed(2);
+    document.getElementById('total-pagar').innerHTML = '0.00';
+    document.getElementById('main-result-container').style.display = 'none';
+    document.getElementById('main-form-container').style.display = 'block';
 }
